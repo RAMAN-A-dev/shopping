@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Menu & Billing</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>Restaurant Menu</h1>
+        <nav>
+            <button class="nav-btn active" data-view="menu">Menu</button>
+            <button class="nav-btn" data-view="admin">Admin Panel</button>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Menu View -->
+        <section id="menu-view" class="view active">
+            <div class="menu-container">
+                <!-- Menu Grid -->
+                <div class="menu-grid" id="menu-grid">
+                    <!-- Menu items will be dynamically inserted here -->
+                </div>
+
+                <!-- Cart Panel -->
+                <aside class="cart-panel" id="cart-panel">
+                    <h2>Shopping Cart</h2>
+                    <div class="cart-items" id="cart-items">
+                        <p class="empty-cart">Your cart is empty</p>
+                    </div>
+                    <div class="cart-total">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">₹0</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Total:</span>
+                            <span id="total" class="total-amount">₹0</span>
+                        </div>
+                    </div>
+                    <div class="cart-actions">
+                        <button class="btn btn-primary" id="pay-now-btn">Pay Now</button>
+                        <button class="btn btn-secondary" id="print-bill-btn">Print Bill</button>
+                        <button class="btn btn-danger" id="clear-cart-btn">Clear Cart</button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- QR Code Modal -->
+            <div id="qr-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h2>Scan to Pay</h2>
+                    <div id="qrcode-container"></div>
+                    <p class="payment-info">Scan the QR code to complete payment</p>
+                    <button class="btn btn-primary" id="close-qr-btn">Close</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin View -->
+        <section id="admin-view" class="view">
+            <div class="admin-container">
+                <h2>Admin Panel</h2>
+                
+                <!-- Menu Management Section -->
+                <div class="admin-section">
+                    <h3>Manage Menu</h3>
+                    <button class="btn btn-primary" id="add-item-btn">Add New Item</button>
+                    <div class="menu-items-list" id="admin-menu-list">
+                        <!-- Admin menu items will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <!-- Sales Report Section -->
+                <div class="admin-section">
+                    <h3>Monthly Sales Report</h3>
+                    <div class="sales-controls">
+                        <label for="month-select">Select Month:</label>
+                        <select id="month-select">
+                            <option value="">All Months</option>
+                        </select>
+                        <label for="year-select">Select Year:</label>
+                        <select id="year-select">
+                            <option value="">All Years</option>
+                        </select>
+                    </div>
+                    <div class="sales-stats" id="sales-stats">
+                        <div class="stat-card">
+                            <h4>Total Sales</h4>
+                            <p id="total-sales">₹0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total Orders</h4>
+                            <p id="total-orders">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Average Order Value</h4>
+                            <p id="avg-order">₹0</p>
+                        </div>
+                    </div>
+                    <div class="sales-table-container">
+                        <table class="sales-table" id="sales-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Order ID</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-tbody">
+                                <!-- Sales data will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payment Configuration -->
+                <div class="admin-section">
+                    <h3>Payment Configuration</h3>
+                    <div class="config-form">
+                        <label for="payment-link">UPI ID / Payment Link:</label>
+                        <input type="text" id="payment-link" placeholder="Enter UPI ID or Payment Link">
+                        <button class="btn btn-primary" id="save-payment-btn">Save Payment Info</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add/Edit Item Modal -->
+        <div id="item-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2 id="modal-title">Add Menu Item</h2>
+                <form id="item-form">
+                    <input type="hidden" id="item-id">
+                    <label for="item-name">Item Name:</label>
+                    <input type="text" id="item-name" required>
+                    
+                    <label for="item-price">Price (₹):</label>
+                    <input type="number" id="item-price" step="0.01" required>
+                    
+                    <label for="item-image">Image URL:</label>
+                    <input type="url" id="item-image" required>
+                    
+                    <label for="item-description">Description:</label>
+                    <textarea id="item-description" rows="3"></textarea>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Item</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-item-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Print Bill Section (Hidden, shown only when printing) -->
+    <div id="print-bill" class="print-only">
+        <div class="bill-header">
+            <h2>Restaurant Bill</h2>
+            <p id="bill-date"></p>
+            <p id="bill-order-id"></p>
+        </div>
+        <table class="bill-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="bill-items">
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>Total:</strong></td>
+                    <td id="bill-total"><strong>₹0</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="bill-footer">
+            <p>Thank you for your visit!</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
